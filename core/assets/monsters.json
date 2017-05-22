@@ -1,0 +1,37 @@
+[
+  {
+    "name": "orc warrior",
+    "types": [
+      "humanoid",
+      "orc"
+    ],
+    "stats": {
+      "hitPoints": 10,
+      "mana": 10,
+      "strength": 5
+    }
+  },
+  {
+    "name": "human wizard",
+    "types": [
+      "humanoid",
+      "human"
+    ],
+    "stats": {
+      "hitPoints": 5,
+      "mana": 20,
+      "strength": 2
+    }
+  },
+  {
+    "name": "cyclops",
+    "types": [
+      "humanoid"
+    ],
+    "stats": {
+      "hitPoints": 50,
+      "mana": 10,
+      "strength": 10
+    }
+  }
+]
