@@ -8,4 +8,5 @@ import com.badlogic.gdx.math.Vector2
 class GameData {
     val playerSpeed = 0.0f
     val playerStartPosition: Vector2 = Vector2.Zero
+    val world: World = World(0,0)
 }

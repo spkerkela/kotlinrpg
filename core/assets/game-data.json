@@ -3,5 +3,9 @@
   "playerStartPosition": {
     "x": 100,
     "y": 150
+  },
+  "world": {
+    "width": 100,
+    "height": 100
   }
 }
