@@ -1,0 +1,7 @@
+{
+  "playerSpeed": 260,
+  "playerStartPosition": {
+    "x": 100,
+    "y": 150
+  }
+}

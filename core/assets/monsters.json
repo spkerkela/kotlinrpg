@@ -9,6 +9,10 @@
       "hitPoints": 10,
       "mana": 10,
       "strength": 5
+    },
+    "position": {
+      "x": 10,
+      "y": 10
     }
   },
   {
@@ -21,6 +25,10 @@
       "hitPoints": 5,
       "mana": 20,
       "strength": 2
+    },
+    "position": {
+      "x": 20,
+      "y": 20
     }
   },
   {
@@ -32,6 +40,10 @@
       "hitPoints": 50,
       "mana": 10,
       "strength": 10
+    },
+    "position": {
+      "x": 30,
+      "y": 30
     }
   }
 ]
