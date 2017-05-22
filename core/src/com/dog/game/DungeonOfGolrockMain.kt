@@ -172,7 +172,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
             //If the E Key is pressed, rotate the camera by rotationSpeed around the Z-Axis
         }
 
-        camera!!.zoom = MathUtils.clamp(camera!!.zoom, 10f, 1000 / camera!!.viewportWidth)
+        camera!!.zoom = MathUtils.clamp(camera!!.zoom, 20f, 1000 / camera!!.viewportWidth)
 
         val effectiveViewportWidth = camera!!.viewportWidth * camera!!.zoom
         val effectiveViewportHeight = camera!!.viewportHeight * camera!!.zoom
