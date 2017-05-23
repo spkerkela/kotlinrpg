@@ -1,5 +1,8 @@
 package com.dog.game
 
+import com.badlogic.ashley.core.Engine
+import com.badlogic.ashley.core.Entity
+import com.badlogic.ashley.core.Family
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
@@ -16,8 +19,10 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonReader
 import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Vector3
-
+import com.dog.game.components.*
+import com.dog.game.systems.InputSystem
+import com.dog.game.systems.MovementSystem
+import com.dog.game.systems.PlayerControllerSystem
 
 class DungeonOfGolrockMain : ApplicationAdapter() {
     internal var batch: SpriteBatch? = null
@@ -26,18 +31,11 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
     internal var monsters: Array<Monster?>? = null
     internal var monsterCount: Int = 0
     private var font: BitmapFont? = null
-    internal var lastClick: Vector2 = Vector2.Zero
-    internal var playerPosition: Vector2 = Vector2.Zero
-    internal var playerFacing: Vector2 = Vector2.Y
-    internal var playerSpeed = 30.0f
-    internal var playerMoveTarget = Vector2.Zero
-    internal var gameData: GameData? = null
-    internal var movementEnabled = true
     internal var camera: OrthographicCamera? = null
     internal val rotateSpeed = 0.02f
+    internal val engine = Engine()
 
     override fun create() {
-        lastClick = Vector2(0f, 0f)
         batch = SpriteBatch()
         font = BitmapFont()
         shapeRenderer = ShapeRenderer()
@@ -49,21 +47,33 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         val monsterDataFile = Gdx.files.internal("monsters.json")
         val gameDataFile = Gdx.files.internal("game-data.json")
         loadMonsterData(monsterDataFile)
-        loadGameData(gameDataFile)
+        val gameData = loadGameData(gameDataFile)
+        val entity = Entity()
+        entity.add(PositionComponent(x = gameData.playerStartPosition.x, y = gameData.playerStartPosition.y))
+        entity.add(VelocityComponent())
+        entity.add(TransformComponent())
+        entity.add(InputComponent())
+        entity.add(PlayerComponent(speed = gameData.playerSpeed))
+        engine.addEntity(entity)
+        engine.addSystem(MovementSystem())
+        engine.addSystem(PlayerControllerSystem())
+        engine.addSystem(InputSystem(camera!!))
     }
 
-    private fun loadGameData(gameDataFile: FileHandle) {
+    private fun loadGameData(gameDataFile: FileHandle): GameData {
         val json = Json()
         json.setTypeName(null)
         json.setUsePrototypes(false)
         json.setIgnoreDeprecated(true)
         val loadedData = json.fromJson(GameData::class.java, gameDataFile)
-        playerPosition = loadedData.playerStartPosition
-        playerMoveTarget = loadedData.playerStartPosition
-        playerSpeed = loadedData.playerSpeed
-        gameData = loadedData
+        val gameData = loadedData
         println(loadedData.world.width)
         println(loadedData.world.height)
+        if (gameData != null) {
+            return gameData
+        } else {
+            return GameData()
+        }
     }
 
     private fun loadMonsterData(monsterDataFile: FileHandle) {
@@ -86,19 +96,14 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         camera!!.update()
     }
 
-    fun update(delta: Float) {
-        val direction = Vector2(lastClick.x.minus(playerPosition.x), lastClick.y.minus(playerPosition.y)).nor()
-        playerFacing = direction
-        val distance = playerPosition.dst2(playerMoveTarget)
-        if (distance > (playerSpeed * delta) + 100) {
-            playerPosition.add(direction.x * playerSpeed * delta, direction.y * playerSpeed * delta)
-        }
-    }
 
     override fun render() {
         handleInput()
-        update(Gdx.graphics.deltaTime)
-        camera!!.position.set(playerPosition.x, playerPosition.y, 0f)
+        engine.update(Gdx.graphics.deltaTime)
+        val p = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get()).first()
+        val pos = p.getComponent(PositionComponent::class.java)
+        val transform = p.getComponent(TransformComponent::class.java)
+        camera!!.position.set(pos.x, pos.y, 0f)
         camera!!.update()
 
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
@@ -116,29 +121,17 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         shapeRenderer?.projectionMatrix = (camera!!.combined)
         shapeRenderer?.color = Color.GOLD
         shapeRenderer?.begin(ShapeType.Filled)
-        shapeRenderer?.circle(lastClick.x, lastClick.y, 32f)
+        shapeRenderer?.color = Color.ORANGE
+        shapeRenderer?.circle(pos.x, pos.y, 26f)
         shapeRenderer?.color = Color.RED
-        shapeRenderer?.circle(playerPosition.x, playerPosition.y, 16f)
         shapeRenderer?.color = Color.WHITE
-        shapeRenderer?.line(playerPosition,
-                Vector2(playerPosition.x + playerFacing.x * 100, playerPosition.y + playerFacing.y * 100))
+        shapeRenderer?.line(Vector2(pos.x, pos.y),
+                Vector2(pos.x + (transform.direction.x * 100), pos.y + (transform.direction.y * 100)))
         shapeRenderer?.end()
     }
 
 
     private fun handleInput() {
-        movementEnabled = !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-            lastClick.x = Gdx.input.x.toFloat()
-            lastClick.y = Gdx.input.y.toFloat()
-            val projection = camera!!.unproject(Vector3(lastClick.x, lastClick.y, 0f))
-            lastClick.set(projection.x, projection.y)
-            if (movementEnabled) {
-                playerMoveTarget = lastClick
-            } else {
-                playerMoveTarget = playerPosition
-            }
-        }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             camera!!.zoom += 0.02f
             //If the A Key is pressed, add 0.02 to the Camera's Zoom
