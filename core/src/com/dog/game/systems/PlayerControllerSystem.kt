@@ -32,12 +32,12 @@ class PlayerControllerSystem : EntitySystem(1) {
             val velocity = vm.get(player)
             val playerData = plm.get(player)
             val direction = Vector2(input.lastClick.x - position.x, input.lastClick.y - position.y).nor()
-            if(!direction.isZero) {
+            if (!direction.isZero) {
                 transform.direction = direction
             }
             if (input.movementEnabled) {
                 val distance = Vector2(position.x, position.y).dst2(playerData.movementTarget)
-                if (distance > 100 * deltaTime * playerData.speed) {
+                if (distance > 1 * deltaTime * playerData.speed) {
                     velocity.x = direction.x * playerData.speed
                     velocity.y = direction.y * playerData.speed
                 } else {

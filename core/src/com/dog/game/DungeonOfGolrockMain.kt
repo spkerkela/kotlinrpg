@@ -18,7 +18,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonReader
-import com.badlogic.gdx.math.MathUtils
 import com.dog.game.components.*
 import com.dog.game.systems.InputSystem
 import com.dog.game.systems.MovementSystem
@@ -32,7 +31,6 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
     internal var monsterCount: Int = 0
     private var font: BitmapFont? = null
     internal var camera: OrthographicCamera? = null
-    internal val rotateSpeed = 0.02f
     internal val engine = Engine()
 
     override fun create() {
@@ -43,6 +41,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         val magic = 60f
         camera = OrthographicCamera(magic, magic / (Gdx.graphics.height / Gdx.graphics.width))
         camera!!.position.set(camera!!.viewportWidth / 2f, camera!!.viewportHeight / 2f, 30f)
+        camera!!.zoom = 20f
         camera!!.update()
         val monsterDataFile = Gdx.files.internal("monsters.json")
         val gameDataFile = Gdx.files.internal("game-data.json")
@@ -96,9 +95,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         camera!!.update()
     }
 
-
     override fun render() {
-        handleInput()
         engine.update(Gdx.graphics.deltaTime)
         val p = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get()).first()
         val pos = p.getComponent(PositionComponent::class.java)
@@ -128,50 +125,6 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         shapeRenderer?.line(Vector2(pos.x, pos.y),
                 Vector2(pos.x + (transform.direction.x * 100), pos.y + (transform.direction.y * 100)))
         shapeRenderer?.end()
-    }
-
-
-    private fun handleInput() {
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            camera!!.zoom += 0.02f
-            //If the A Key is pressed, add 0.02 to the Camera's Zoom
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-            camera!!.zoom -= 0.02f
-            //If the Q Key is pressed, subtract 0.02 from the Camera's Zoom
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            camera!!.translate(-3f, 0f, 0f)
-            //If the LEFT Key is pressed, translate the camera -3 units in the X-Axis
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            camera!!.translate(3f, 0f, 0f)
-            //If the RIGHT Key is pressed, translate the camera 3 units in the X-Axis
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            camera!!.translate(0f, -3f, 0f)
-            //If the DOWN Key is pressed, translate the camera -3 units in the Y-Axis
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            camera!!.translate(0f, 3f, 0f)
-            //If the UP Key is pressed, translate the camera 3 units in the Y-Axis
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            camera!!.rotate(-rotateSpeed, 0f, 0f, 1f)
-            //If the W Key is pressed, rotate the camera by -rotationSpeed around the Z-Axis
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-            camera!!.rotate(rotateSpeed, 0f, 0f, 1f)
-            //If the E Key is pressed, rotate the camera by rotationSpeed around the Z-Axis
-        }
-
-        camera!!.zoom = MathUtils.clamp(camera!!.zoom, 20f, 1000 / camera!!.viewportWidth)
-
-        val effectiveViewportWidth = camera!!.viewportWidth * camera!!.zoom
-        val effectiveViewportHeight = camera!!.viewportHeight * camera!!.zoom
-
-        camera!!.position.x = MathUtils.clamp(camera!!.position.x, effectiveViewportWidth / 2f, 100 - effectiveViewportWidth / 2f)
-        camera!!.position.y = MathUtils.clamp(camera!!.position.y, effectiveViewportHeight / 2f, 100 - effectiveViewportHeight / 2f)
     }
 
     override fun dispose() {

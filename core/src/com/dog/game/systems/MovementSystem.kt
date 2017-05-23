@@ -18,8 +18,5 @@ class MovementSystem : IteratingSystem(Family.all(PositionComponent::class.java,
         val velocity = vm.get(entity)
         position.x += velocity.x * deltaTime
         position.y += velocity.y * deltaTime
-        if (position.x != 0f && position.y != 0f) {
-            println(String.format("%s %s", position.x, position.y))
-        }
     }
 }
