@@ -1,11 +1,11 @@
 package com.dog.game
 
+import com.badlogic.ashley.core.ComponentMapper
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.Family
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Input
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
@@ -32,6 +32,9 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
     private var font: BitmapFont? = null
     internal var camera: OrthographicCamera? = null
     internal val engine = Engine()
+    internal val positionMapper: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
+    internal val circleMapper: ComponentMapper<CircleComponent> = ComponentMapper.getFor(CircleComponent::class.java)
+    internal val textMapper: ComponentMapper<TextComponent> = ComponentMapper.getFor(TextComponent::class.java)
 
     override fun create() {
         batch = SpriteBatch()
@@ -45,18 +48,39 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         camera!!.update()
         val monsterDataFile = Gdx.files.internal("monsters.json")
         val gameDataFile = Gdx.files.internal("game-data.json")
-        loadMonsterData(monsterDataFile)
         val gameData = loadGameData(gameDataFile)
+        val player = createPlayer(gameData)
+        for (x in 0..50) {
+            for (y in 0..50) {
+                engine.addEntity(createObject(Vector2(x * 30.0f, y * 40.0f), Color.TEAL))
+            }
+        }
+        engine.addEntity(player)
+        engine.addSystem(MovementSystem())
+        engine.addSystem(PlayerControllerSystem())
+        engine.addSystem(InputSystem(camera!!))
+        loadMonsterData(monsterDataFile)
+    }
+
+    private fun createPlayer(gameData: GameData): Entity {
         val entity = Entity()
         entity.add(PositionComponent(x = gameData.playerStartPosition.x, y = gameData.playerStartPosition.y))
         entity.add(VelocityComponent())
         entity.add(TransformComponent())
         entity.add(InputComponent())
         entity.add(PlayerComponent(speed = gameData.playerSpeed))
-        engine.addEntity(entity)
-        engine.addSystem(MovementSystem())
-        engine.addSystem(PlayerControllerSystem())
-        engine.addSystem(InputSystem(camera!!))
+        entity.add(CircleComponent(radius = 50f, color = Color.GREEN))
+        return entity
+    }
+
+    private fun createObject(p: Vector2, color: Color): Entity {
+        val entity = Entity()
+        entity.add(PositionComponent(p.x, p.y))
+        entity.add(VelocityComponent())
+        entity.add(TransformComponent())
+        entity.add(InputComponent())
+        entity.add(CircleComponent(radius = 10.0f, color = color))
+        return entity
     }
 
     private fun loadGameData(gameDataFile: FileHandle): GameData {
@@ -66,8 +90,6 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         json.setIgnoreDeprecated(true)
         val loadedData = json.fromJson(GameData::class.java, gameDataFile)
         val gameData = loadedData
-        println(loadedData.world.width)
-        println(loadedData.world.height)
         if (gameData != null) {
             return gameData
         } else {
@@ -85,7 +107,10 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         monsters = arrayOfNulls<Monster>(size = monsterCount)
         for (i in 0..monsterCount - 1) {
             val monster = json.fromJson(Monster::class.java, base.get(i).toString())
-            monsters!![i] = monster
+            val monsterEntity = Entity()
+            monsterEntity.add(TextComponent(monster.toString(), Color.RED))
+            monsterEntity.add(PositionComponent(monster.position))
+            engine.addEntity(monsterEntity)
         }
     }
 
@@ -98,7 +123,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
     override fun render() {
         engine.update(Gdx.graphics.deltaTime)
         val p = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get()).first()
-        val pos = p.getComponent(PositionComponent::class.java)
+        val pos = positionMapper.get(p)
         val transform = p.getComponent(TransformComponent::class.java)
         camera!!.position.set(pos.x, pos.y, 0f)
         camera!!.update()
@@ -107,20 +132,22 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         batch?.projectionMatrix = (camera!!.combined)
         batch?.begin()
-        (0..monsterCount - 1)
-                .map { monsters!![it] }
-                .forEach { it ->
-                    if (it != null && it.position != null) {
-                        font!!.draw(batch, it.toString(), (it.position as Vector2).x, (it.position as Vector2).y)
-                    }
-                }
+        for (textEntity in engine.getEntitiesFor(Family.all(PositionComponent::class.java, TextComponent::class.java).get())) {
+            val textPos = positionMapper.get(textEntity)
+            val textComponent = textMapper.get(textEntity)
+            font!!.color = textComponent.color
+            font!!.draw(batch, textComponent.text, textPos.x, textPos.y)
+        }
         batch?.end()
         shapeRenderer?.projectionMatrix = (camera!!.combined)
-        shapeRenderer?.color = Color.GOLD
         shapeRenderer?.begin(ShapeType.Filled)
-        shapeRenderer?.color = Color.ORANGE
-        shapeRenderer?.circle(pos.x, pos.y, 26f)
-        shapeRenderer?.color = Color.RED
+        val entities = engine.getEntitiesFor(Family.all(PositionComponent::class.java, CircleComponent::class.java).get())
+        for (entity in entities) {
+            val circle = circleMapper.get(entity)
+            val entityPos = positionMapper.get(entity)
+            shapeRenderer?.color = circle.color
+            shapeRenderer?.circle(entityPos.x, entityPos.y, circle.radius)
+        }
         shapeRenderer?.color = Color.WHITE
         shapeRenderer?.line(Vector2(pos.x, pos.y),
                 Vector2(pos.x + (transform.direction.x * 100), pos.y + (transform.direction.y * 100)))
