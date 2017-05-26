@@ -1,6 +1,8 @@
 package com.dog.game.systems
 
 import com.badlogic.ashley.core.*
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.dog.game.components.*
 
@@ -34,6 +36,14 @@ class PlayerControllerSystem : EntitySystem(1) {
             val direction = Vector2(input.lastClick.x - position.x, input.lastClick.y - position.y).nor()
             if (!direction.isZero) {
                 transform.direction = direction
+            }
+            if (input.attackPressed) {
+                val bullet = Entity()
+                bullet.add(PositionComponent(position.x, position.y))
+                bullet.add(CircleComponent(10.0f, Color.CHARTREUSE))
+                bullet.add(VelocityComponent(transform.direction.x * 600 + MathUtils.random(0.0f, 50.0f), transform.direction.y * 600 + MathUtils.random(0.0f, 50.0f)))
+                bullet.add(LimitedDurationComponent(5.0f))
+                engine.addEntity(bullet)
             }
             if (input.movementEnabled) {
                 val distance = Vector2(position.x, position.y).dst2(playerData.movementTarget)
