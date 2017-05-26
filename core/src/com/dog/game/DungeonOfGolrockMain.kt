@@ -114,6 +114,9 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
             val monsterEntity = Entity()
             monsterEntity.add(TextComponent(monster.toString(), Color.RED))
             monsterEntity.add(PositionComponent(monster.position))
+            monsterEntity.add(VelocityComponent(0.0f, 50.0f))
+            monsterEntity.add(LimitedDurationComponent(4.0f))
+
             engine.addEntity(monsterEntity)
         }
     }
