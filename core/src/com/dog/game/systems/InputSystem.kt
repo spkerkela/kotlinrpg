@@ -12,12 +12,12 @@ class InputSystem(private val camera: OrthographicCamera) : IteratingSystem(Fami
     internal val im = ComponentMapper.getFor(InputComponent::class.java)
     override fun addedToEngine(engine: Engine?) {
         super.addedToEngine(engine)
-        println("input system initiated")
     }
 
     override fun processEntity(entity: Entity?, deltaTime: Float) {
         val input = im.get(entity)
         input.movementEnabled = !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
+        input.attackPressed = Gdx.input.isButtonPressed(Input.Buttons.RIGHT)
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             val projection = camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
             input.lastClick.set(projection.x, projection.y)

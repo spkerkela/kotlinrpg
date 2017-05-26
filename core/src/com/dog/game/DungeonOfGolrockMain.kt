@@ -15,11 +15,13 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonReader
 import com.dog.game.components.*
 import com.dog.game.systems.InputSystem
+import com.dog.game.systems.LimitedDurationSystem
 import com.dog.game.systems.MovementSystem
 import com.dog.game.systems.PlayerControllerSystem
 
@@ -59,6 +61,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         engine.addSystem(MovementSystem())
         engine.addSystem(PlayerControllerSystem())
         engine.addSystem(InputSystem(camera!!))
+        engine.addSystem(LimitedDurationSystem())
         loadMonsterData(monsterDataFile)
     }
 
@@ -80,6 +83,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         entity.add(TransformComponent())
         entity.add(InputComponent())
         entity.add(CircleComponent(radius = 10.0f, color = color))
+        entity.add(LimitedDurationComponent(MathUtils.random(0.5f, 10.0f)))
         return entity
     }
 
