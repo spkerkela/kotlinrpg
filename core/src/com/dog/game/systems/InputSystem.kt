@@ -18,9 +18,15 @@ class InputSystem(private val camera: OrthographicCamera) : IteratingSystem(Fami
         val input = im.get(entity)
         input.movementEnabled = !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
         input.attackPressed = Gdx.input.isButtonPressed(Input.Buttons.RIGHT)
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) || Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
             val projection = camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
-            input.lastClick.set(projection.x, projection.y)
+            input.lastLeftClick.set(projection.x, projection.y)
+        }
+
+        if(input.attackPressed) {
+            val projection = camera.unproject(Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
+            input.lastRightClick.set(projection.x, projection.y)
+            input.movementEnabled = false
         }
     }
 }

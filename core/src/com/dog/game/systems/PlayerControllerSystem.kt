@@ -33,7 +33,7 @@ class PlayerControllerSystem : EntitySystem(1) {
             val transform = tm.get(player)
             val velocity = vm.get(player)
             val playerData = plm.get(player)
-            val direction = Vector2(input.lastClick.x - position.x, input.lastClick.y - position.y).nor()
+            val direction = Vector2(input.lastLeftClick.x - position.x, input.lastLeftClick.y - position.y).nor()
             if (!direction.isZero) {
                 transform.direction = direction
             }
@@ -54,8 +54,8 @@ class PlayerControllerSystem : EntitySystem(1) {
                     velocity.x = 0f
                     velocity.y = 0f
                 }
-                playerData.movementTarget.x = input.lastClick.x
-                playerData.movementTarget.y = input.lastClick.y
+                playerData.movementTarget.x = input.lastLeftClick.x
+                playerData.movementTarget.y = input.lastLeftClick.y
             } else {
                 playerData.movementTarget.x = position.x
                 playerData.movementTarget.y = position.y
