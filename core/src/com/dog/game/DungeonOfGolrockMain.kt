@@ -17,17 +17,17 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.physics.box2d.BodyDef
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonReader
 import com.dog.game.components.*
-import com.dog.game.systems.InputSystem
-import com.dog.game.systems.LimitedDurationSystem
-import com.dog.game.systems.MovementSystem
-import com.dog.game.systems.PlayerControllerSystem
+import com.dog.game.systems.*
 
 class DungeonOfGolrockMain : ApplicationAdapter() {
     internal var batch: SpriteBatch? = null
     internal var shapeRenderer: ShapeRenderer? = null
+    internal var debugRenderer: Box2DDebugRenderer? = null
     internal var img: Texture? = null
     internal var monsters: Array<Monster?>? = null
     internal var monsterCount: Int = 0
@@ -35,6 +35,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
     internal var camera: OrthographicCamera? = null
     internal val engine = Engine()
     internal val positionMapper: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
+    internal val colliderMapper: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
     internal val circleMapper: ComponentMapper<CircleComponent> = ComponentMapper.getFor(CircleComponent::class.java)
     internal val textMapper: ComponentMapper<TextComponent> = ComponentMapper.getFor(TextComponent::class.java)
 
@@ -42,6 +43,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         batch = SpriteBatch()
         font = BitmapFont()
         shapeRenderer = ShapeRenderer()
+        debugRenderer = Box2DDebugRenderer()
         img = Texture("badlogic.jpg")
         val magic = 60f
         camera = OrthographicCamera(magic, magic / (Gdx.graphics.height / Gdx.graphics.width))
@@ -51,18 +53,22 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         val monsterDataFile = Gdx.files.internal("monsters.json")
         val gameDataFile = Gdx.files.internal("game-data.json")
         val gameData = loadGameData(gameDataFile)
-        val player = createPlayer(gameData)
+
+        engine.addSystem(MovementSystem())
+        engine.addSystem(InputSystem(camera!!))
+        engine.addSystem(LimitedDurationSystem())
+        val physicsSystem = PhysicsSystem(2)
+        engine.addSystem(physicsSystem)
+        engine.addEntityListener(Family.all(VelocityComponent::class.java, CircleColliderComponent::class.java, PositionComponent::class.java).get(), physicsSystem)
+        loadMonsterData(monsterDataFile)
         for (x in 0..50) {
             for (y in 0..50) {
                 engine.addEntity(createObject(Vector2(x * 30.0f, y * 40.0f), Color.TEAL))
             }
         }
+        val player = createPlayer(gameData)
         engine.addEntity(player)
-        engine.addSystem(MovementSystem())
         engine.addSystem(PlayerControllerSystem())
-        engine.addSystem(InputSystem(camera!!))
-        engine.addSystem(LimitedDurationSystem())
-        loadMonsterData(monsterDataFile)
     }
 
     private fun createPlayer(gameData: GameData): Entity {
@@ -72,7 +78,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         entity.add(TransformComponent())
         entity.add(InputComponent())
         entity.add(PlayerComponent(speed = gameData.playerSpeed))
-        entity.add(CircleComponent(radius = 50f, color = Color.GREEN))
+        entity.add(CircleColliderComponent(radius = 50f, categoryMask = 1, collidesWith = 2, type = BodyDef.BodyType.KinematicBody))
         return entity
     }
 
@@ -83,6 +89,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         entity.add(TransformComponent())
         entity.add(InputComponent())
         entity.add(CircleComponent(radius = 10.0f, color = color))
+        entity.add(CircleColliderComponent(radius = 10.0f, categoryMask = 2, collidesWith = 1))
         entity.add(LimitedDurationComponent(MathUtils.random(0.5f, 10.0f)))
         return entity
     }
@@ -126,15 +133,19 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
     }
 
     override fun render() {
-        engine.update(Gdx.graphics.deltaTime)
-        val p = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get()).first()
-        val pos = positionMapper.get(p)
-        val transform = p.getComponent(TransformComponent::class.java)
-        camera!!.position.set(pos.x, pos.y, 0f)
-        camera!!.update()
 
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        val world = engine.getSystem(PhysicsSystem::class.java).world
+        val p = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get()).first()
+        val collider = colliderMapper.get(p)
+        val pos = collider.body!!.position
+        camera!!.position.set(pos.x, pos.y, 0f)
+        camera!!.update()
+        debugRenderer!!.render(world, camera!!.combined)
+        engine.update(Gdx.graphics.deltaTime)
+        val transform = p.getComponent(TransformComponent::class.java)
+
         batch?.projectionMatrix = (camera!!.combined)
         batch?.begin()
         for (textEntity in engine.getEntitiesFor(Family.all(PositionComponent::class.java, TextComponent::class.java).get())) {
