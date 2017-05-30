@@ -47,6 +47,7 @@ class PlayerControllerSystem : EntitySystem(1) {
                 bullet.add(VelocityComponent(transform.direction.x * 600 + MathUtils.random(0.0f, 50.0f), transform.direction.y * 600 + MathUtils.random(0.0f, 50.0f)))
                 bullet.add(LimitedDurationComponent(5.0f))
                 bullet.add(CircleColliderComponent(radius = 10.0f, categoryMask = 1, collidesWith = 2))
+                bullet.add(HealthComponent(1))
                 engine.addEntity(bullet)
             }
             if (input.movementEnabled) {

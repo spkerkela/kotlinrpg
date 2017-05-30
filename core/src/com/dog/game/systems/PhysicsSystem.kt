@@ -4,15 +4,38 @@ import com.badlogic.ashley.core.*
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.physics.box2d.*
 import com.dog.game.PhysicsEngine
-import com.dog.game.components.CircleColliderComponent
-import com.dog.game.components.PositionComponent
-import com.dog.game.components.VelocityComponent
+import com.dog.game.components.*
 
 class PhysicsSystem(priority: Int) : EntitySystem(priority), EntityListener, ContactListener {
-    override fun endContact(contact: Contact?) {
+    override fun beginContact(contact: Contact?) {
+        if (contact != null) {
+            val a = contact.fixtureA.body
+            val b = contact.fixtureB.body
+            val entityA = a.userData
+            val entityB = b.userData
+            if (entityA is Entity) {
+                val health = hm.get(entityA)
+                val pos = pm.get(entityA)
+                if (health is HealthComponent && pos is PositionComponent) {
+                    health.curHealth -= 1
+                    val textEntity = Entity()
+                    textEntity.add(TextComponent("DAMAGE"))
+                    textEntity.add(LimitedDurationComponent(2.0f))
+                    textEntity.add(PositionComponent(pos.x, pos.y))
+                    textEntity.add(VelocityComponent(0f, 50f))
+                    engine.addEntity(textEntity)
+                }
+            }
+            if (entityB is Entity) {
+                val health = hm.get(entityB)
+                if (health is HealthComponent) {
+                    health.curHealth -= 1
+                }
+            }
+        }
     }
 
-    override fun beginContact(contact: Contact?) {
+    override fun endContact(contact: Contact?) {
     }
 
     override fun preSolve(contact: Contact?, oldManifold: Manifold?) {
@@ -24,6 +47,7 @@ class PhysicsSystem(priority: Int) : EntitySystem(priority), EntityListener, Con
     val pm: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
     val vm: ComponentMapper<VelocityComponent> = ComponentMapper.getFor(VelocityComponent::class.java)
     val cm: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
+    val hm: ComponentMapper<HealthComponent> = ComponentMapper.getFor(HealthComponent::class.java)
     override fun entityAdded(entity: Entity?) {
         if (entity != null) {
             val collider = cm.get(entity)
@@ -43,6 +67,7 @@ class PhysicsSystem(priority: Int) : EntitySystem(priority), EntityListener, Con
             body.setLinearVelocity(velocity.x, velocity.y)
             collider.body = body
             circleShape.dispose()
+            body.userData = entity
         }
     }
 

@@ -57,6 +57,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         engine.addSystem(MovementSystem())
         engine.addSystem(InputSystem(camera!!))
         engine.addSystem(LimitedDurationSystem())
+        engine.addSystem(HealthSystem())
         val physicsSystem = PhysicsSystem(2)
         engine.addSystem(physicsSystem)
         engine.addEntityListener(Family.all(VelocityComponent::class.java, CircleColliderComponent::class.java, PositionComponent::class.java).get(), physicsSystem)
@@ -123,6 +124,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
             monsterEntity.add(PositionComponent(monster.position))
             monsterEntity.add(VelocityComponent())
             monsterEntity.add(CircleColliderComponent(radius = 30f, collidesWith = 1, categoryMask = 2, type = BodyDef.BodyType.KinematicBody))
+            monsterEntity.add(HealthComponent(monster.stats!!.hitPoints))
 
             engine.addEntity(monsterEntity)
         }

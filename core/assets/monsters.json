@@ -6,7 +6,7 @@
       "orc"
     ],
     "stats": {
-      "hitPoints": 10,
+      "hitPoints": 800,
       "mana": 10,
       "strength": 5
     },
@@ -22,7 +22,7 @@
       "human"
     ],
     "stats": {
-      "hitPoints": 5,
+      "hitPoints": 500,
       "mana": 20,
       "strength": 2
     },
@@ -37,7 +37,7 @@
       "humanoid"
     ],
     "stats": {
-      "hitPoints": 50,
+      "hitPoints": 2000,
       "mana": 10,
       "strength": 10
     },
