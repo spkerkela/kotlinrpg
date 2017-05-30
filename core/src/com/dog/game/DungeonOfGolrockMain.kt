@@ -121,6 +121,8 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
             val monsterEntity = Entity()
             monsterEntity.add(TextComponent(monster.toString(), Color.RED))
             monsterEntity.add(PositionComponent(monster.position))
+            monsterEntity.add(VelocityComponent())
+            monsterEntity.add(CircleColliderComponent(radius = 30f, collidesWith = 1, categoryMask = 2, type = BodyDef.BodyType.KinematicBody))
 
             engine.addEntity(monsterEntity)
         }
@@ -136,7 +138,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
 
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        val world = engine.getSystem(PhysicsSystem::class.java).world
+        val world = PhysicsEngine.world
         val p = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get()).first()
         val collider = colliderMapper.get(p)
         val pos = collider.body!!.position
