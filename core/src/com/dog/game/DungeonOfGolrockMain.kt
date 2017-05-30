@@ -170,6 +170,8 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         shapeRenderer?.line(Vector2(pos.x, pos.y),
                 Vector2(pos.x + (transform.direction.x * 100), pos.y + (transform.direction.y * 100)))
         shapeRenderer?.end()
+
+        PhysicsEngine.doPhysicsStep(Gdx.graphics.deltaTime)
     }
 
     override fun dispose() {

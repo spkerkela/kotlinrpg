@@ -2,7 +2,6 @@ package com.dog.game.systems
 
 import com.badlogic.ashley.core.*
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d.*
 import com.dog.game.PhysicsEngine
 import com.dog.game.components.CircleColliderComponent
@@ -56,8 +55,6 @@ class PhysicsSystem(priority: Int) : EntitySystem(priority), EntityListener, Con
         }
     }
 
-    internal var accum = 0f
-    val timeStep = 1.0f / 300f
     override fun addedToEngine(engine: Engine?) {
         super.addedToEngine(engine)
         Box2D.init()
@@ -65,17 +62,7 @@ class PhysicsSystem(priority: Int) : EntitySystem(priority), EntityListener, Con
         Gdx.app.log("Systems", "Physics initialized")
     }
 
-    fun doPhysicsStep(deltaTime: Float) {
-        val frameTime = Math.min(deltaTime, 0.25f)
-        accum += frameTime
-        while (accum >= timeStep) {
-            PhysicsEngine.world.step(timeStep, 6, 2)
-            accum -= timeStep
-        }
-    }
-
     override fun update(deltaTime: Float) {
         super.update(deltaTime)
-        doPhysicsStep(deltaTime)
     }
 }
