@@ -1,7 +1,6 @@
 package com.dog.game.systems
 
 import com.badlogic.ashley.core.*
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.dog.game.components.*
@@ -11,6 +10,7 @@ class PlayerControllerSystem : EntitySystem(1) {
     val im: ComponentMapper<InputComponent> = ComponentMapper.getFor(InputComponent::class.java)
     val pm: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
     val vm: ComponentMapper<VelocityComponent> = ComponentMapper.getFor(VelocityComponent::class.java)
+    val am: ComponentMapper<AttackComponent> = ComponentMapper.getFor(AttackComponent::class.java)
     val tm: ComponentMapper<TransformComponent> = ComponentMapper.getFor(TransformComponent::class.java)
     val plm: ComponentMapper<PlayerComponent> = ComponentMapper.getFor(PlayerComponent::class.java)
     val cm: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
@@ -22,7 +22,8 @@ class PlayerControllerSystem : EntitySystem(1) {
                     InputComponent::class.java,
                     PositionComponent::class.java,
                     VelocityComponent::class.java,
-                    TransformComponent::class.java).get()).first()
+                    TransformComponent::class.java,
+                    AttackComponent::class.java).get()).first()
         }
     }
 
@@ -35,20 +36,24 @@ class PlayerControllerSystem : EntitySystem(1) {
             val position = body!!.position
             val transform = tm.get(player)
             val playerData = plm.get(player)
+            val attack = am.get(player)
 
             val direction = Vector2(input.lastLeftClick.x - position.x, input.lastLeftClick.y - position.y).nor()
             if (!direction.isZero) {
                 // TODO rotation for box2d body
                 transform.direction = direction
             }
-            if (input.attackPressed) {
+            if (input.attackPressed && attack.sinceLastAttack >= attack.cooldown) {
                 val bullet = Entity()
-                bullet.add(PositionComponent(position.x, position.y))
-                bullet.add(VelocityComponent(transform.direction.x * 600 + MathUtils.random(0.0f, 50.0f), transform.direction.y * 600 + MathUtils.random(0.0f, 50.0f)))
-                bullet.add(LimitedDurationComponent(5.0f))
-                bullet.add(CircleColliderComponent(radius = 10.0f, categoryMask = 1, collidesWith = 2))
+                val criticalRoll = MathUtils.random(1.0f) < 0.20f
+                bullet.add(PositionComponent(position.x + transform.direction.x * collider.radius, position.y + transform.direction.y * collider.radius))
+                bullet.add(VelocityComponent(transform.direction.x * attack.projectileSpeed + MathUtils.random(0.0f, attack.randomSpread), transform.direction.y * attack.projectileSpeed + MathUtils.random(0.0f, attack.randomSpread)))
+                bullet.add(LimitedDurationComponent(attack.lifetime))
+                bullet.add(CircleColliderComponent(radius = attack.radius, categoryMask = 1, collidesWith = 2))
                 bullet.add(HealthComponent(1))
+                bullet.add(DamageComponent(100, 20, isCritical = criticalRoll))
                 engine.addEntity(bullet)
+                attack.sinceLastAttack = 0.0f
             }
             if (input.movementEnabled) {
                 val distance = Vector2(position.x, position.y).dst2(playerData.movementTarget)

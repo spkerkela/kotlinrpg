@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
-import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d.BodyDef
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer
@@ -58,13 +57,14 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         engine.addSystem(InputSystem(camera!!))
         engine.addSystem(LimitedDurationSystem())
         engine.addSystem(HealthSystem())
+        engine.addSystem(AttackSystem())
         val physicsSystem = PhysicsSystem(2)
         engine.addSystem(physicsSystem)
         engine.addEntityListener(Family.all(VelocityComponent::class.java, CircleColliderComponent::class.java, PositionComponent::class.java).get(), physicsSystem)
         loadMonsterData(monsterDataFile)
         for (x in 0..50) {
             for (y in 0..50) {
-                engine.addEntity(createObject(Vector2(x * 30.0f, y * 40.0f), Color.TEAL))
+                engine.addEntity(createObject(Vector2(x * 100.0f, y * 100.0f)))
             }
         }
         val player = createPlayer(gameData)
@@ -77,21 +77,23 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         entity.add(PositionComponent(x = gameData.playerStartPosition.x, y = gameData.playerStartPosition.y))
         entity.add(VelocityComponent())
         entity.add(TransformComponent())
-        entity.add(InputComponent())
+        entity.add(InputComponent(movementEnabled = false))
         entity.add(PlayerComponent(speed = gameData.playerSpeed))
         entity.add(CircleColliderComponent(radius = 50f, categoryMask = 1, collidesWith = 2, type = BodyDef.BodyType.KinematicBody))
+        entity.add(AttackComponent(radius = 4f, cooldown = 0.1f, lifetime = 5.1f, projectileSpeed = 500.0f))
+        entity.add(HealthComponent(2000))
         return entity
     }
 
-    private fun createObject(p: Vector2, color: Color): Entity {
+    private fun createObject(p: Vector2): Entity {
         val entity = Entity()
         entity.add(PositionComponent(p.x, p.y))
         entity.add(VelocityComponent())
         entity.add(TransformComponent())
-        entity.add(InputComponent())
-        entity.add(CircleComponent(radius = 10.0f, color = color))
         entity.add(CircleColliderComponent(radius = 10.0f, categoryMask = 2, collidesWith = 1))
-        entity.add(LimitedDurationComponent(MathUtils.random(0.5f, 10.0f)))
+        entity.add(DamageComponent(20, 5, isCritical = true))
+        entity.add(HealthComponent(100))
+
         return entity
     }
 
@@ -125,7 +127,6 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
             monsterEntity.add(VelocityComponent())
             monsterEntity.add(CircleColliderComponent(radius = 30f, collidesWith = 1, categoryMask = 2, type = BodyDef.BodyType.KinematicBody))
             monsterEntity.add(HealthComponent(monster.stats!!.hitPoints))
-
             engine.addEntity(monsterEntity)
         }
     }
@@ -140,40 +141,45 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
 
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        val world = PhysicsEngine.world
-        val p = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get()).first()
-        val collider = colliderMapper.get(p)
-        val pos = collider.body!!.position
-        camera!!.position.set(pos.x, pos.y, 0f)
-        camera!!.update()
-        debugRenderer!!.render(world, camera!!.combined)
-        engine.update(Gdx.graphics.deltaTime)
-        val transform = p.getComponent(TransformComponent::class.java)
+        val players = engine.getEntitiesFor(Family.one(PlayerComponent::class.java).get())
+        if (players.count() > 0) {
+            val world = PhysicsEngine.world
+            val p = players.first()
+            val collider = colliderMapper.get(p)
+            val pos = collider.body!!.position
+            camera!!.position.set(pos.x, pos.y, 0f)
+            camera!!.update()
+            debugRenderer!!.render(world, camera!!.combined)
+            engine.update(Gdx.graphics.deltaTime)
+            val transform = p.getComponent(TransformComponent::class.java)
 
-        batch?.projectionMatrix = (camera!!.combined)
-        batch?.begin()
-        for (textEntity in engine.getEntitiesFor(Family.all(PositionComponent::class.java, TextComponent::class.java).get())) {
-            val textPos = positionMapper.get(textEntity)
-            val textComponent = textMapper.get(textEntity)
-            font!!.color = textComponent.color
-            font!!.draw(batch, textComponent.text, textPos.x, textPos.y)
-        }
-        batch?.end()
-        shapeRenderer?.projectionMatrix = (camera!!.combined)
-        shapeRenderer?.begin(ShapeType.Filled)
-        val entities = engine.getEntitiesFor(Family.all(PositionComponent::class.java, CircleComponent::class.java).get())
-        for (entity in entities) {
-            val circle = circleMapper.get(entity)
-            val entityPos = positionMapper.get(entity)
-            shapeRenderer?.color = circle.color
-            shapeRenderer?.circle(entityPos.x, entityPos.y, circle.radius)
-        }
-        shapeRenderer?.color = Color.WHITE
-        shapeRenderer?.line(Vector2(pos.x, pos.y),
-                Vector2(pos.x + (transform.direction.x * 100), pos.y + (transform.direction.y * 100)))
-        shapeRenderer?.end()
+            batch?.projectionMatrix = (camera!!.combined)
+            batch?.begin()
+            for (textEntity in engine.getEntitiesFor(Family.all(PositionComponent::class.java, TextComponent::class.java).get())) {
+                val textPos = positionMapper.get(textEntity)
+                val textComponent = textMapper.get(textEntity)
+                font!!.color = textComponent.color
+                font!!.data.setScale(textComponent.scale)
+                font!!.draw(batch, textComponent.text, textPos.x, textPos.y)
+            }
+            batch?.end()
+            shapeRenderer?.projectionMatrix = (camera!!.combined)
+            shapeRenderer?.begin(ShapeType.Filled)
+            val entities = engine.getEntitiesFor(Family.all(PositionComponent::class.java, CircleComponent::class.java).get())
+            for (entity in entities) {
+                val circle = circleMapper.get(entity)
+                val entityPos = positionMapper.get(entity)
+                shapeRenderer?.color = circle.color
+                shapeRenderer?.circle(entityPos.x, entityPos.y, circle.radius)
+            }
+            shapeRenderer?.color = Color.WHITE
+            shapeRenderer?.line(Vector2(pos.x, pos.y),
+                    Vector2(pos.x + (transform.direction.x * 100), pos.y + (transform.direction.y * 100)))
+            shapeRenderer?.end()
 
-        PhysicsEngine.doPhysicsStep(Gdx.graphics.deltaTime)
+            PhysicsEngine.doPhysicsStep(Gdx.graphics.deltaTime)
+        }
+
     }
 
     override fun dispose() {
