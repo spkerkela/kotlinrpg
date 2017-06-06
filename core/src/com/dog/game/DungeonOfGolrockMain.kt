@@ -74,13 +74,14 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
 
     private fun createPlayer(gameData: GameData): Entity {
         val entity = Entity()
+        val attack = gameData.attack
         entity.add(PositionComponent(x = gameData.playerStartPosition.x, y = gameData.playerStartPosition.y))
         entity.add(VelocityComponent())
         entity.add(TransformComponent())
         entity.add(InputComponent(movementEnabled = false))
         entity.add(PlayerComponent(speed = gameData.playerSpeed))
         entity.add(CircleColliderComponent(radius = 50f, categoryMask = 1, collidesWith = 2, type = BodyDef.BodyType.KinematicBody))
-        entity.add(AttackComponent(radius = 4f, cooldown = 0.1f, lifetime = 5.1f, projectileSpeed = 500.0f))
+        entity.add(AttackComponent(radius = attack.radius, cooldown = attack.cooldown, lifetime = attack.lifetime, projectileSpeed = attack.projectileSpeed))
         entity.add(HealthComponent(2000))
         return entity
     }

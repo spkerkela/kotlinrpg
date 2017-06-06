@@ -4,6 +4,13 @@
     "x": 100,
     "y": 150
   },
+  "attack": {
+    "radius": 50,
+    "lifetime": 0.1,
+    "projectileSpeed": 0,
+    "randomSpread": 0,
+    "cooldown": 1.0
+  },
   "world": {
     "width": 100,
     "height": 100
