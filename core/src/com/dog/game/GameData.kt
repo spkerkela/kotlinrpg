@@ -10,5 +10,6 @@ class GameData {
     val playerSpeed = 0.0f
     val playerStartPosition: Vector2 = Vector2.Zero
     val attack: AttackComponent = AttackComponent()
+    val playerHealth = 100
     val world: World = World(0,0)
 }

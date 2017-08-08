@@ -1,5 +1,6 @@
 {
   "playerSpeed": 260,
+  "playerHealth": 1000,
   "playerStartPosition": {
     "x": 100,
     "y": 150
