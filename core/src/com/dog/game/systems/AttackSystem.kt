@@ -8,7 +8,7 @@ import com.dog.game.components.AttackComponent
 
 class AttackSystem : IteratingSystem(Family.all(AttackComponent::class.java).get()) {
     val am: ComponentMapper<AttackComponent> = ComponentMapper.getFor(AttackComponent::class.java)
-    val longTime = 1000000f
+    private val longTime = 1000000f
     override fun processEntity(entity: Entity?, deltaTime: Float) {
         if (entity != null) {
             val attack = am.get(entity)

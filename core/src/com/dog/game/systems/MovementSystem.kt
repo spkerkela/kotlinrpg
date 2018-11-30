@@ -7,8 +7,8 @@ import com.dog.game.components.PositionComponent
 import com.dog.game.components.VelocityComponent
 
 class MovementSystem : IteratingSystem(Family.all(PositionComponent::class.java, VelocityComponent::class.java).exclude(CircleColliderComponent::class.java).get()) {
-    internal val pm = ComponentMapper.getFor(PositionComponent::class.java)
-    internal val vm = ComponentMapper.getFor(VelocityComponent::class.java)
+    private val pm = ComponentMapper.getFor(PositionComponent::class.java)
+    private val vm = ComponentMapper.getFor(VelocityComponent::class.java)
     override fun addedToEngine(engine: Engine?) {
         println("Movement system initiated")
         super.addedToEngine(engine)

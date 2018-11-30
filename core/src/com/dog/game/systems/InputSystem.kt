@@ -10,9 +10,6 @@ import com.dog.game.components.InputComponent
 
 class InputSystem(private val camera: OrthographicCamera) : IteratingSystem(Family.all(InputComponent::class.java).get()) {
     internal val im = ComponentMapper.getFor(InputComponent::class.java)
-    override fun addedToEngine(engine: Engine?) {
-        super.addedToEngine(engine)
-    }
 
     override fun processEntity(entity: Entity?, deltaTime: Float) {
         val input = im.get(entity)

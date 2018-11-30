@@ -54,11 +54,11 @@ class PhysicsSystem(priority: Int) : EntitySystem(priority), EntityListener, Con
     override fun postSolve(contact: Contact?, impulse: ContactImpulse?) {
     }
 
-    val pm: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
-    val vm: ComponentMapper<VelocityComponent> = ComponentMapper.getFor(VelocityComponent::class.java)
-    val cm: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
-    val hm: ComponentMapper<HealthComponent> = ComponentMapper.getFor(HealthComponent::class.java)
-    val dm: ComponentMapper<DamageComponent> = ComponentMapper.getFor(DamageComponent::class.java)
+    private val pm: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
+    private val vm: ComponentMapper<VelocityComponent> = ComponentMapper.getFor(VelocityComponent::class.java)
+    private val cm: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
+    private val hm: ComponentMapper<HealthComponent> = ComponentMapper.getFor(HealthComponent::class.java)
+    private val dm: ComponentMapper<DamageComponent> = ComponentMapper.getFor(DamageComponent::class.java)
     override fun entityAdded(entity: Entity?) {
         if (entity != null) {
             val collider = cm.get(entity)
@@ -98,7 +98,4 @@ class PhysicsSystem(priority: Int) : EntitySystem(priority), EntityListener, Con
         Gdx.app.log("Systems", "Physics initialized")
     }
 
-    override fun update(deltaTime: Float) {
-        super.update(deltaTime)
-    }
 }

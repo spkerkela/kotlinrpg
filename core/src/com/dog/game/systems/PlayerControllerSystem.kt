@@ -7,13 +7,13 @@ import com.dog.game.components.*
 
 class PlayerControllerSystem : EntitySystem(1) {
     var player: Entity? = null
-    val im: ComponentMapper<InputComponent> = ComponentMapper.getFor(InputComponent::class.java)
-    val pm: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
-    val vm: ComponentMapper<VelocityComponent> = ComponentMapper.getFor(VelocityComponent::class.java)
-    val am: ComponentMapper<AttackComponent> = ComponentMapper.getFor(AttackComponent::class.java)
-    val tm: ComponentMapper<TransformComponent> = ComponentMapper.getFor(TransformComponent::class.java)
-    val plm: ComponentMapper<PlayerComponent> = ComponentMapper.getFor(PlayerComponent::class.java)
-    val cm: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
+    private val im: ComponentMapper<InputComponent> = ComponentMapper.getFor(InputComponent::class.java)
+    private val pm: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
+    private val vm: ComponentMapper<VelocityComponent> = ComponentMapper.getFor(VelocityComponent::class.java)
+    private val am: ComponentMapper<AttackComponent> = ComponentMapper.getFor(AttackComponent::class.java)
+    private val tm: ComponentMapper<TransformComponent> = ComponentMapper.getFor(TransformComponent::class.java)
+    private val plm: ComponentMapper<PlayerComponent> = ComponentMapper.getFor(PlayerComponent::class.java)
+    private val cm: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
     override fun addedToEngine(engine: Engine?) {
         super.addedToEngine(engine)
         if (engine != null) {

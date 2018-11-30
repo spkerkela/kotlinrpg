@@ -5,14 +5,14 @@ import com.badlogic.gdx.physics.box2d.World
 
 object PhysicsEngine {
     val world = World(Vector2(0f, 0f), true)
-    internal var accum = 0f
-    val timeStep = 1.0f / 300f
+    private var accumulator = 0f
+    private const val timeStep = 1.0f / 300f
     fun doPhysicsStep(deltaTime: Float) {
         val frameTime = Math.min(deltaTime, 0.25f)
-        accum += frameTime
-        while (accum >= timeStep) {
+        accumulator += frameTime
+        while (accumulator >= timeStep) {
             PhysicsEngine.world.step(timeStep, 6, 2)
-            accum -= timeStep
+            accumulator -= timeStep
         }
     }
 }

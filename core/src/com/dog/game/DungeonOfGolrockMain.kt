@@ -24,19 +24,19 @@ import com.dog.game.components.*
 import com.dog.game.systems.*
 
 class DungeonOfGolrockMain : ApplicationAdapter() {
-    internal var batch: SpriteBatch? = null
-    internal var shapeRenderer: ShapeRenderer? = null
-    internal var debugRenderer: Box2DDebugRenderer? = null
-    internal var img: Texture? = null
-    internal var monsters: Array<Monster?>? = null
-    internal var monsterCount: Int = 0
+    private var batch: SpriteBatch? = null
+    private var shapeRenderer: ShapeRenderer? = null
+    private var debugRenderer: Box2DDebugRenderer? = null
+    private var img: Texture? = null
+    private var monsters: Array<Monster?>? = null
+    private var monsterCount: Int = 0
     private var font: BitmapFont? = null
-    internal var camera: OrthographicCamera? = null
-    internal val engine = Engine()
-    internal val positionMapper: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
-    internal val colliderMapper: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
-    internal val circleMapper: ComponentMapper<CircleComponent> = ComponentMapper.getFor(CircleComponent::class.java)
-    internal val textMapper: ComponentMapper<TextComponent> = ComponentMapper.getFor(TextComponent::class.java)
+    private var camera: OrthographicCamera? = null
+    private val engine = Engine()
+    private val positionMapper: ComponentMapper<PositionComponent> = ComponentMapper.getFor(PositionComponent::class.java)
+    private val colliderMapper: ComponentMapper<CircleColliderComponent> = ComponentMapper.getFor(CircleColliderComponent::class.java)
+    private val circleMapper: ComponentMapper<CircleComponent> = ComponentMapper.getFor(CircleComponent::class.java)
+    private val textMapper: ComponentMapper<TextComponent> = ComponentMapper.getFor(TextComponent::class.java)
 
     override fun create() {
         batch = SpriteBatch()
@@ -104,12 +104,7 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         json.setUsePrototypes(false)
         json.setIgnoreDeprecated(true)
         val loadedData = json.fromJson(GameData::class.java, gameDataFile)
-        val gameData = loadedData
-        if (gameData != null) {
-            return gameData
-        } else {
-            return GameData()
-        }
+        return loadedData ?: GameData()
     }
 
     private fun loadMonsterData(monsterDataFile: FileHandle) {
@@ -119,8 +114,8 @@ class DungeonOfGolrockMain : ApplicationAdapter() {
         json.setUsePrototypes(false)
         json.setIgnoreDeprecated(true)
         monsterCount = base.size
-        monsters = arrayOfNulls<Monster>(size = monsterCount)
-        for (i in 0..monsterCount - 1) {
+        monsters = arrayOfNulls(size = monsterCount)
+        for (i in 0 until monsterCount) {
             val monster = json.fromJson(Monster::class.java, base.get(i).toString())
             val monsterEntity = Entity()
             monsterEntity.add(TextComponent(monster.toString(), Color.RED))

@@ -7,10 +7,10 @@
   },
   "attack": {
     "radius": 50,
-    "lifetime": 0.1,
-    "projectileSpeed": 0,
-    "randomSpread": 0,
-    "cooldown": 1.0
+    "lifetime": 3,
+    "projectileSpeed": 100,
+    "randomSpread": 1,
+    "cooldown": 0.1
   },
   "world": {
     "width": 100,
