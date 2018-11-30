@@ -5,10 +5,11 @@ This is a project I created for learning kotlin and game engine development.
 ## Build:
 
 ```bash
-$ gradle build
+$ ./gradlew
+$ ./gradlew build
 ```
 
 ## Run:
 ```bash
-$ gradle run
+$ ./gradle run
 ```
