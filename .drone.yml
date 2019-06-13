@@ -1,0 +1,18 @@
+kind: pipeline
+name: default
+steps:
+  - name: build
+    image: gradle
+    commands:
+      - apt-get update
+      - apt-get install zip -y
+      - ./gradlew build
+  - name: gitea_release
+    image: plugins/gitea-release
+    settings:
+      api_key:
+        from_secret: tcp_server_key
+      base_url: 'https://git.spkerkela.com'
+      files: server.zip
+    when:
+      event: tag
