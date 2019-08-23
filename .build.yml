@@ -1,0 +1,6 @@
+image: gradle
+tasks:
+  - deps: |
+      apt-get update;
+      apt-get install zip-y;
+      ./gradlew build
