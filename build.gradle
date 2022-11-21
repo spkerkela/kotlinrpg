@@ -18,7 +18,7 @@ allprojects {
     version = '1.0'
     ext {
         appName = "dungeon-of-golrock"
-        gdxVersion = '1.9.6'
+        gdxVersion = '1.11.0'
         roboVMVersion = '2.3.0'
         box2DLightsVersion = '1.4'
         ashleyVersion = '1.7.4'
